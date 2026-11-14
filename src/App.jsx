@@ -1,5 +1,6 @@
 import { Routes, Route, Link } from 'react-router-dom'
 import MapPage from './pages/MapPage'
+import ThemeToggle from './components/ThemeToggle'
 
 export default function App() {
   return (
@@ -7,7 +8,8 @@ export default function App() {
       <nav className="navbar">
         <Link to="/">Map</Link>
         <Link to="/wallet">Wallet</Link>
-        <Link to="/login">Login</Link>
+        <Link to="/login">Login</Link> 
+        <ThemeToggle />
       </nav>
       <Routes>
         <Route path="/" element={<MapPage />} />

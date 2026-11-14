@@ -89,7 +89,7 @@ export default function MapPage() {
           </CircleMarker>
         ))}
       </MapContainer>
-      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, background: '#0f172a', padding: '6px 10px', borderRadius: 8, fontSize: 12 }}>
+      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, background: 'var(--card)', color: 'var(--text)', padding: '6px 10px', borderRadius: 8, fontSize: 12 }}>
         IP: {ip || '...'} · Location: {me ? me.source : 'finding...'}
       </div>
       <button className="btn report-btn" onClick={handleReport}>Light is out</button>

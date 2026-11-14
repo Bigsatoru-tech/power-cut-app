@@ -49,3 +49,21 @@ body {
   transform: translateX(-50%);
   z-index: 1000;
 }
+[data-theme='light'] {
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #0f172a;
+}
+
+body { transition: background 0.2s, color 0.2s; }
+
+.theme-btn {
+  margin-left: auto;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--text);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
