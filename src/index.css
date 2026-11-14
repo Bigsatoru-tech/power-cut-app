@@ -1,0 +1,51 @@
+:root {
+  --red: #e53935;
+  --yellow: #fbc02d;
+  --green: #43a047;
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #f8fafc;
+  --font: 'Poppins', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.btn {
+  background: var(--red);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.btn:hover { opacity: 0.9; }
+
+.card {
+  background: var(--card);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.navbar {
+  display: flex;
+  gap: 20px;
+  padding: 12px 20px;
+  background: var(--card);
+}
+.navbar a { color: var(--text); text-decoration: none; }
+
+.map-wrap { height: calc(100vh - 48px); position: relative; }
+.report-btn {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
