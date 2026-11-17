@@ -1,21 +1,23 @@
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import MapPage from './pages/MapPage'
-import ThemeToggle from './components/ThemeToggle'
+import SkillMapPage from './pages/SkillMapPage'
+import OfferSkill from './pages/OfferSkill'
+import DirectMessage from './pages/DirectMessage'
+import LocationGate from './components/LocationGate'
+import Navbar from './components/Navbar'
 
 export default function App() {
   return (
-    <>
-      <nav className="navbar">
-        <Link to="/">Map</Link>
-        <Link to="/wallet">Wallet</Link>
-        <Link to="/login">Login</Link> 
-        <ThemeToggle />
-      </nav>
+    <LocationGate>
+      <Navbar />
       <Routes>
         <Route path="/" element={<MapPage />} />
+        <Route path="/skills" element={<SkillMapPage />} />
+        <Route path="/skills/offer" element={<OfferSkill />} />
+        <Route path="/dm/:userId" element={<DirectMessage />} />
         <Route path="/wallet" element={<h2 style={{ padding: 20 }}>Wallet (coming soon)</h2>} />
         <Route path="/login" element={<h2 style={{ padding: 20 }}>Login (coming soon)</h2>} />
       </Routes>
-    </>
+    </LocationGate>
   )
 }

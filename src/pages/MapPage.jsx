@@ -1,17 +1,13 @@
 import { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import { getReports, createReport, confirmReport, seedAround } from '../api'
+import { Link } from 'react-router-dom'
+import FlyOnce from '../components/FlyOnce'
+import CommunityChat from '../components/CommunityChat'
 
+let infoShownOnce = false
 const COLORS = { pending: '#fbc02d', verified: '#e53935', restored: '#43a047' }
 const DEFAULT_CENTER = [6.5244, 3.3792]
-
-function FlyTo({ position }) {
-  const map = useMap()
-  useEffect(() => {
-    if (position) map.flyTo(position, 15)
-  }, [position, map])
-  return null
-}
 
 async function getIpInfo() {
   const res = await fetch('https://ipapi.co/json/')
@@ -23,6 +19,14 @@ export default function MapPage() {
   const [reports, setReports] = useState([])
   const [me, setMe] = useState(null)
   const [ip, setIp] = useState('')
+    const [showInfo, setShowInfo] = useState(() => !infoShownOnce)
+
+  useEffect(() => {
+    if (!showInfo) return
+    infoShownOnce = true
+    const timer = setTimeout(() => setShowInfo(false), 10000)
+    return () => clearTimeout(timer)
+  }, [showInfo])
 
   useEffect(() => {
     let seeded = false
@@ -69,7 +73,7 @@ export default function MapPage() {
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <FlyTo position={me ? [me.lat, me.lng] : null} />
+        <FlyOnce me={me} />
         {me && (
           <CircleMarker center={[me.lat, me.lng]} radius={8}
             pathOptions={{ color: '#fff', fillColor: '#2979ff', fillOpacity: 1 }}>
@@ -89,10 +93,14 @@ export default function MapPage() {
           </CircleMarker>
         ))}
       </MapContainer>
-      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, background: 'var(--card)', color: 'var(--text)', padding: '6px 10px', borderRadius: 8, fontSize: 12 }}>
-        IP: {ip || '...'} · Location: {me ? me.source : 'finding...'}
-      </div>
+            {showInfo && (
+        <div className="info-chip">
+          IP: {ip || '...'} · Location: {me ? me.source : 'finding...'}
+        </div>
+      )}
       <button className="btn report-btn" onClick={handleReport}>Light is out</button>
+      <Link className="skill-entry" to="/skills">Skill Swap</Link>
+      <CommunityChat room="power" title="Power Community" />
     </div>
   )
 }
