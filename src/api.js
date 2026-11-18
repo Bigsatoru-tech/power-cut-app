@@ -24,6 +24,7 @@ export async function confirmReport(id) {
   })
   return [...reports]
 }
+
 export function seedAround(lat, lng) {
   const now = new Date().toISOString()
   reports = [
@@ -31,4 +32,8 @@ export function seedAround(lat, lng) {
     { id: 2, lat: lat - 0.003, lng: lng + 0.005, status: 'pending', confirmations: 1, createdAt: now },
     { id: 3, lat: lat + 0.002, lng: lng - 0.004, status: 'restored', confirmations: 3, createdAt: now },
   ]
+}
+export async function markRestored(id) {
+  reports = reports.map((r) => (r.id === id ? { ...r, status: 'restored' } : r))
+  return [...reports]
 }
