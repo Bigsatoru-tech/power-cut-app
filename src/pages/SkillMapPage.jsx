@@ -52,27 +52,43 @@ export default function SkillMapPage() {
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
         <FlyOnce me={me} />
+
         {me && (
-          <CircleMarker center={[me.lat, me.lng]} radius={8}
-            pathOptions={{ color: '#fff', fillColor: '#2979ff', fillOpacity: 1 }}>
+          <CircleMarker
+            center={[me.lat, me.lng]}
+            radius={8}
+            pathOptions={{ color: '#fff', fillColor: '#2979ff', fillOpacity: 1 }}
+          >
             <Popup>You are here</Popup>
           </CircleMarker>
         )}
+
         {skills.map((s) => (
           <Marker key={s.id} position={[s.lat, s.lng]} icon={icons[s.id]}>
             <Popup>
               <div className="skill-popup">
                 <b>{s.name}</b>
-                <div className="skill-meta">{s.category} · Level {s.level} · approximate area</div>
+
+                <div className="skill-meta">
+                  {s.category} · Level {s.level} · approximate area
+                </div>
+
                 <div className="skill-offer-label">Can do</div>
                 <div>{s.offers}</div>
+
                 {s.mine ? (
                   <div className="skill-note">This is your offer</div>
                 ) : myLevel < s.requiredLevel ? (
-                  <button className="popup-btn" disabled>Needs Level {s.requiredLevel}</button>
+                  <button className="popup-btn" disabled>
+                    Needs Level {s.requiredLevel}
+                  </button>
                 ) : (
-                  <button className="popup-btn" onClick={() => navigate(`/dm/${s.id}`)}>
+                  <button
+                    className="popup-btn"
+                    onClick={() => navigate(`/dm/${s.id}`)}
+                  >
                     Contact this person
                   </button>
                 )}
@@ -82,9 +98,16 @@ export default function SkillMapPage() {
         ))}
       </MapContainer>
 
-      <div className="skill-info">{skills.length} people offering · Barter with XP · No money</div>
+      <div className="skill-info">
+        {skills.length} people offering · Barter with XP · No money
+      </div>
+
       <XpBadge />
-      <Link className="offer-btn" to="/skills/offer">+ Offer a skill</Link>
+
+      <Link className="offer-btn" to="/skills/offer">
+        + Offer a skill
+      </Link>
+
       <CommunityChat room="skills" title="Skill Swap Community" />
     </div>
   )

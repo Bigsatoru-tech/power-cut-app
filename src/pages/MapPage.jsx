@@ -19,7 +19,7 @@ export default function MapPage() {
   const [reports, setReports] = useState([])
   const [me, setMe] = useState(null)
   const [ip, setIp] = useState('')
-    const [showInfo, setShowInfo] = useState(() => !infoShownOnce)
+  const [showInfo, setShowInfo] = useState(() => !infoShownOnce)
 
   useEffect(() => {
     if (!showInfo) return
@@ -74,32 +74,56 @@ export default function MapPage() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FlyOnce me={me} />
+
         {me && (
-          <CircleMarker center={[me.lat, me.lng]} radius={8}
-            pathOptions={{ color: '#fff', fillColor: '#2979ff', fillOpacity: 1 }}>
+          <CircleMarker
+            center={[me.lat, me.lng]}
+            radius={8}
+            pathOptions={{ color: '#fff', fillColor: '#2979ff', fillOpacity: 1 }}
+          >
             <Popup>You are here ({me.source})</Popup>
           </CircleMarker>
         )}
+
         {reports.map((r) => (
-          <CircleMarker key={r.id} center={[r.lat, r.lng]} radius={14}
-            pathOptions={{ color: COLORS[r.status], fillColor: COLORS[r.status], fillOpacity: 0.7 }}>
+          <CircleMarker
+            key={r.id}
+            center={[r.lat, r.lng]}
+            radius={14}
+            pathOptions={{
+              color: COLORS[r.status],
+              fillColor: COLORS[r.status],
+              fillOpacity: 0.7,
+            }}
+          >
             <Popup>
               <b>Status:</b> {r.status}<br />
               <b>Confirmations:</b> {r.confirmations}<br />
+
               {r.status === 'pending' && (
-                <button onClick={() => handleConfirm(r.id)}>Yes, no light here</button>
+                <button onClick={() => handleConfirm(r.id)}>
+                  Yes, no light here
+                </button>
               )}
             </Popup>
           </CircleMarker>
         ))}
       </MapContainer>
-            {showInfo && (
+
+      {showInfo && (
         <div className="info-chip">
           IP: {ip || '...'} · Location: {me ? me.source : 'finding...'}
         </div>
       )}
-      <button className="btn report-btn" onClick={handleReport}>Light is out</button>
-      <Link className="skill-entry" to="/skills">Skill Swap</Link>
+
+      <button className="btn report-btn" onClick={handleReport}>
+        Light is out
+      </button>
+
+      <Link className="skill-entry" to="/skills">
+        Skill Swap
+      </Link>
+
       <CommunityChat room="power" title="Power Community" />
     </div>
   )

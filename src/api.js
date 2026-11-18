@@ -24,6 +24,7 @@ export async function confirmReport(id) {
   })
   return [...reports]
 }
+
 export function seedAround(lat, lng) {
   const now = new Date().toISOString()
   reports = [
