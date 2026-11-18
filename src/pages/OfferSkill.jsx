@@ -1,13 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import useUserLocation from '../hooks/useUserLocation'
-import { seedSkillsAround, addSkill } from '../skillsApi'
-import { currentUser } from '../data/currentUser'
+import { addSkill } from '../skillsApi'
 
 const CATEGORIES = ['Electrical', 'Design', 'Printing', 'Tech', 'Tailoring', 'Tutoring']
 
 export default function OfferSkill() {
-  const { me } = useUserLocation()
   const navigate = useNavigate()
   const [form, setForm] = useState({ category: 'Electrical', offers: '', wants: '', requiredLevel: 1 })
 
@@ -17,16 +14,7 @@ export default function OfferSkill() {
 
   async function submit(e) {
     e.preventDefault()
-    if (!me) return alert('Still finding your location...')
-    seedSkillsAround(me.lat, me.lng)
-    await addSkill({
-      ...form,
-      requiredLevel: Number(form.requiredLevel),
-      name: currentUser.name,
-      lat: me.lat,
-      lng: me.lng,
-      mine: true,
-    })
+    await addSkill({ ...form, requiredLevel: Number(form.requiredLevel) })
     navigate('/skills')
   }
 
@@ -51,8 +39,7 @@ export default function OfferSkill() {
           <option value={3}>Level 3</option>
         </select>
       </label>
-      <p className="skill-meta">Others only see your approximate area, never your exact spot.</p>
-      <button className="btn" type="submit">Put me on the map</button>
+      <button className="btn" type="submit">Post my skill</button>
     </form>
   )
 }

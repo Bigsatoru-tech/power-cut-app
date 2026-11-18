@@ -10,7 +10,6 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <NavLink to="/" end className={linkClass}>Map</NavLink>
-      <NavLink to="/skills" className={linkClass}>Skill Swap</NavLink>
       <NavLink to="/wallet" className={linkClass}>Wallet</NavLink>
       {!loggedIn && <NavLink to="/login" className={linkClass}>Login</NavLink>}
       <ThemeToggle />

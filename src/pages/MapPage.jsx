@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
-import { getReports, createReport, confirmReport, seedAround } from '../api'
 import { Link } from 'react-router-dom'
+import { getReports, createReport, confirmReport, seedAround, markRestored } from '../api'
 import FlyOnce from '../components/FlyOnce'
 import CommunityChat from '../components/CommunityChat'
 
 let infoShownOnce = false
+
 const COLORS = { pending: '#fbc02d', verified: '#e53935', restored: '#43a047' }
 const DEFAULT_CENTER = [6.5244, 3.3792]
 
@@ -20,7 +21,11 @@ export default function MapPage() {
   const [me, setMe] = useState(null)
   const [ip, setIp] = useState('')
   const [showInfo, setShowInfo] = useState(() => !infoShownOnce)
+  const [myReportId, setMyReportId] = useState(null)
+  const [holding, setHolding] = useState(false)
+  const holdTimer = useRef(null)
 
+  // IP / location chip shows for 10 seconds
   useEffect(() => {
     if (!showInfo) return
     infoShownOnce = true
@@ -28,6 +33,9 @@ export default function MapPage() {
     return () => clearTimeout(timer)
   }, [showInfo])
 
+  useEffect(() => () => clearTimeout(holdTimer.current), [])
+
+  // Find the user: GPS first, IP as a fallback
   useEffect(() => {
     let seeded = false
 
@@ -57,13 +65,30 @@ export default function MapPage() {
 
   async function handleReport() {
     if (!me) return alert('Still finding your location...')
-    await createReport({ lat: me.lat, lng: me.lng })
+    const report = await createReport({ lat: me.lat, lng: me.lng })
+    setMyReportId(report.id)
     setReports(await getReports())
   }
 
   async function handleConfirm(id) {
     await confirmReport(id)
     setReports(await getReports())
+  }
+
+  // Hold the button for 1.5 seconds to say the light is back
+  function startHold() {
+    setHolding(true)
+    holdTimer.current = setTimeout(async () => {
+      setHolding(false)
+      await markRestored(myReportId)
+      setMyReportId(null)
+      setReports(await getReports())
+    }, 1500)
+  }
+
+  function cancelHold() {
+    clearTimeout(holdTimer.current)
+    setHolding(false)
   }
 
   return (
@@ -74,7 +99,6 @@ export default function MapPage() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FlyOnce me={me} />
-
         {me && (
           <CircleMarker
             center={[me.lat, me.lng]}
@@ -84,26 +108,18 @@ export default function MapPage() {
             <Popup>You are here ({me.source})</Popup>
           </CircleMarker>
         )}
-
         {reports.map((r) => (
           <CircleMarker
             key={r.id}
             center={[r.lat, r.lng]}
             radius={14}
-            pathOptions={{
-              color: COLORS[r.status],
-              fillColor: COLORS[r.status],
-              fillOpacity: 0.7,
-            }}
+            pathOptions={{ color: COLORS[r.status], fillColor: COLORS[r.status], fillOpacity: 0.7 }}
           >
             <Popup>
               <b>Status:</b> {r.status}<br />
               <b>Confirmations:</b> {r.confirmations}<br />
-
               {r.status === 'pending' && (
-                <button onClick={() => handleConfirm(r.id)}>
-                  Yes, no light here
-                </button>
+                <button onClick={() => handleConfirm(r.id)}>Yes, no light here</button>
               )}
             </Popup>
           </CircleMarker>
@@ -116,14 +132,23 @@ export default function MapPage() {
         </div>
       )}
 
-      <button className="btn report-btn" onClick={handleReport}>
-        Light is out
-      </button>
+      {myReportId ? (
+        <button
+          className={holding ? 'btn report-btn restore-btn holding' : 'btn report-btn restore-btn'}
+          onPointerDown={startHold}
+          onPointerUp={cancelHold}
+          onPointerLeave={cancelHold}
+          onPointerCancel={cancelHold}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <span className="hold-fill" />
+          <span className="hold-label">Hold to say light is back</span>
+        </button>
+      ) : (
+        <button className="btn report-btn" onClick={handleReport}>Light is out</button>
+      )}
 
-      <Link className="skill-entry" to="/skills">
-        Skill Swap
-      </Link>
-
+      <Link className="skill-entry" to="/skills">Skill Swap</Link>
       <CommunityChat room="power" title="Power Community" />
     </div>
   )

@@ -33,3 +33,7 @@ export function seedAround(lat, lng) {
     { id: 3, lat: lat + 0.002, lng: lng - 0.004, status: 'restored', confirmations: 3, createdAt: now },
   ]
 }
+export async function markRestored(id) {
+  reports = reports.map((r) => (r.id === id ? { ...r, status: 'restored' } : r))
+  return [...reports]
+}
