@@ -5,6 +5,7 @@ import SkillDetail from './pages/SkillDetail'
 import OfferSkill from './pages/OfferSkill'
 import DirectMessage from './pages/DirectMessage'
 import LocationGate from './components/LocationGate'
+import WalletPage from './pages/WalletPage'
 import Navbar from './components/Navbar'
 
 export default function App() {
@@ -17,7 +18,7 @@ export default function App() {
         <Route path="/skills/offer" element={<OfferSkill />} />
         <Route path="/skills/:id" element={<SkillDetail />} />
         <Route path="/dm/:userId" element={<DirectMessage />} />
-        <Route path="/wallet" element={<h2 style={{ padding: 20 }}>Wallet (coming soon)</h2>} />
+        <Route path="/wallet" element={<WalletPage />} />
         <Route path="/login" element={<h2 style={{ padding: 20 }}>Login (coming soon)</h2>} />
       </Routes>
     </LocationGate>
