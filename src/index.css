@@ -870,9 +870,7 @@ body,
 .wallet-actions button {
   min-height: 48px;
 }
-  0%, 90% { opacity: 1; }
-  100% { opacity: 0; }
-}
+ 
 /* ---------- Phone navbar ---------- */
 @media (max-width: 480px) {
   .navbar { gap: 6px; padding: 8px 10px; }
