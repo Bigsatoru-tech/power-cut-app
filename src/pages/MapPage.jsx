@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
-import { Link } from 'react-router-dom'
+import { MapContainer, TileLayer, CircleMarker, Popup, ZoomControl } from 'react-leaflet'
 import { getReports, createReport, confirmReport, seedAround, markRestored } from '../api'
 import FlyOnce from '../components/FlyOnce'
 import CommunityChat from '../components/CommunityChat'
+import MapHud from '../components/MapHud'
 
 let infoShownOnce = false
 
@@ -93,11 +93,12 @@ export default function MapPage() {
 
   return (
     <div className="map-wrap">
-      <MapContainer center={DEFAULT_CENTER} zoom={13} style={{ height: '100%' }}>
+      <MapContainer center={DEFAULT_CENTER} zoom={13} zoomControl={false} style={{ height: '100%' }}>
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <ZoomControl position="bottomleft" />
         <FlyOnce me={me} />
         {me && (
           <CircleMarker
@@ -148,7 +149,7 @@ export default function MapPage() {
         <button className="btn report-btn" onClick={handleReport}>Light is out</button>
       )}
 
-      <Link className="skill-entry" to="/skills">Skill Swap</Link>
+      <MapHud />
       <CommunityChat room="power" title="Power Community" />
     </div>
   )
