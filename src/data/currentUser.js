@@ -1,4 +1,4 @@
-export const currentUser = { id: 'me', name: 'You', xp: 140 }
+export const currentUser = { id: 'me', username: 'you_demo', name: 'You', xp: 140 }
 
 export function getLevelInfo(xp) {
   if (xp >= 300) return { level: 3, progress: 100 }

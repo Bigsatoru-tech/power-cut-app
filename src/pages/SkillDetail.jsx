@@ -1,10 +1,12 @@
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { getSkillById, initials } from '../skillsApi'
 import { currentUser, getLevelInfo } from '../data/currentUser'
+import useFriends from '../hooks/useFriends'
+import { getStatus, sendRequest } from '../friendsApi'
 
 export default function SkillDetail() {
   const { id } = useParams()
-  const navigate = useNavigate()
+  useFriends() // re-renders when a request changes
   const skill = getSkillById(id)
   const myLevel = getLevelInfo(currentUser.xp).level
 
@@ -18,6 +20,32 @@ export default function SkillDetail() {
   }
 
   const locked = myLevel < skill.requiredLevel
+  const status = getStatus(skill.username)
+
+  let action
+  if (skill.mine) {
+    action = <div className="skill-note">This is your offer</div>
+  } else if (locked) {
+    action = <button className="contact-btn" disabled>Reach Level {skill.requiredLevel} to contact</button>
+  } else if (status === 'friends') {
+    action = <Link className="contact-btn contact-link" to={`/dm/${skill.username}`}>Open chat</Link>
+  } else if (status === 'sent') {
+    action = <button className="contact-btn" disabled>Request sent, waiting for a reply</button>
+  } else if (status === 'received') {
+    action = <Link className="contact-btn contact-link" to="/friends">They sent you a request: view it</Link>
+  } else {
+    action = (
+      <>
+        <button
+          className="contact-btn"
+          onClick={() => sendRequest(skill.username, { id: skill.id, title: skill.offers })}
+        >
+          Send friend request
+        </button>
+        <div className="skill-note">Once they accept, you can chat about the swap.</div>
+      </>
+    )
+  }
 
   return (
     <div className="skill-page">
@@ -27,7 +55,7 @@ export default function SkillDetail() {
           <div className="avatar">{initials(skill.name)}</div>
           <div>
             <b>{skill.name}</b>
-            <div className="skill-meta">{skill.category} · Level {skill.level}</div>
+            <div className="skill-meta">@{skill.username} · {skill.category} · Level {skill.level}</div>
           </div>
         </div>
         <div className="skill-offer-label" style={{ marginTop: 12 }}>Can do</div>
@@ -39,13 +67,7 @@ export default function SkillDetail() {
         <div className="skill-card-bottom">
           <span className="req">Requires Level {skill.requiredLevel}</span>
         </div>
-        {skill.mine ? (
-          <div className="skill-note">This is your offer</div>
-        ) : locked ? (
-          <button className="contact-btn" disabled>Reach Level {skill.requiredLevel} to contact</button>
-        ) : (
-          <button className="contact-btn" onClick={() => navigate(`/dm/${skill.id}`)}>Contact this person</button>
-        )}
+        {action}
       </div>
     </div>
   )

@@ -1,4 +1,6 @@
-const rooms = {
+const rooms = {  'dm-ada_obi': [
+    { id: 1, user: 'Ada Obi', text: 'Hey! I saw your outage report earlier. Is the light back?', time: Date.now() - 900000 },
+  ],
   power: [
     { id: 1, user: 'Chinedu', text: 'Light just went off in my area again', time: Date.now() - 600000 },
     { id: 2, user: 'Amina', text: 'Same here, I just confirmed your report', time: Date.now() - 300000 },
