@@ -3796,3 +3796,8 @@ body,
   background: rgba(148, 163, 184, 0.2);
   color: var(--text);
 }
+/* ---------- Map HUD at 90% size ---------- */
+.hud-left {
+  transform: scale(0.9);
+  transform-origin: top left;
+}

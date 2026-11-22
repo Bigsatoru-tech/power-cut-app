@@ -92,7 +92,7 @@ export default function AuthPage() {
       localStorage.setItem("loggedIn", "yes");
       setSuccess("Login successful!");
 
-      setTimeout(() => navigate("/dashboard"), 700);
+      setTimeout(() => navigate("/"), 700);
     } else {
       if (!formData.email.trim()) {
         setError("Please enter your email address.");
