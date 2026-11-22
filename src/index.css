@@ -3798,6 +3798,6 @@ body,
 }
 /* ---------- Map HUD at 90% size ---------- */
 .hud-left {
-  transform: scale(0.9);
+  transform: scale(0.5);
   transform-origin: top left;
 }
