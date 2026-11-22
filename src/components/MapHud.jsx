@@ -36,7 +36,7 @@ export default function MapHud() {
           <span className="hud-card-text">
             Friends
             <span className="hud-card-sub">
-              {friends.length} friends{incoming.length > 0 ? ` · ${incoming.length} new` : ''}
+              {friends.length} {friends.length === 1 ? 'friend' : 'friends'}{incoming.length > 0 ? ` · ${incoming.length} new` : ''}
             </span>
           </span>
           <span className="hud-chevron"><ChevronIcon /></span>
