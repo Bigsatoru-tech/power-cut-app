@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup, ZoomControl } from 'react-leaflet'
-import { getReports, createReport, confirmReport, seedAround, markRestored } from '../api'
+import { getReports, createReport, confirmReport, restoreReport, saveMyLocation } from '../api'
 import FlyOnce from '../components/FlyOnce'
 import CommunityChat from '../components/CommunityChat'
 import MapHud from '../components/MapHud'
+import useAuth from '../hooks/useAuth'
 
 let infoShownOnce = false
 
@@ -17,13 +18,15 @@ async function getIpInfo() {
 }
 
 export default function MapPage() {
+  const { refreshProfile } = useAuth()
   const [reports, setReports] = useState([])
   const [me, setMe] = useState(null)
   const [ip, setIp] = useState('')
   const [showInfo, setShowInfo] = useState(() => !infoShownOnce)
-  const [myReportId, setMyReportId] = useState(null)
   const [holding, setHolding] = useState(false)
   const holdTimer = useRef(null)
+
+  const myActive = reports.find((r) => r.mine && r.status !== 'restored')
 
   // IP / location chip shows for 10 seconds
   useEffect(() => {
@@ -35,27 +38,37 @@ export default function MapPage() {
 
   useEffect(() => () => clearTimeout(holdTimer.current), [])
 
-  // Find the user: GPS first, IP as a fallback
+  // Load reports now and every 10 seconds
   useEffect(() => {
-    let seeded = false
+    function load() {
+      getReports().then(setReports).catch(console.error)
+    }
+    load()
+    const timer = setInterval(load, 10000)
+    return () => clearInterval(timer)
+  }, [])
 
-    function applyLocation(lat, lng, source) {
-      setMe({ lat, lng, source })
-      if (!seeded) {
-        seeded = true
-        seedAround(lat, lng)
-        getReports().then(setReports)
+  // Find the user: GPS first, IP as a fallback, and save it for the admins
+  useEffect(() => {
+    let ipValue = ''
+    const ipPromise = getIpInfo().catch(() => null)
+    ipPromise.then((info) => {
+      if (info) {
+        ipValue = info.ip
+        setIp(info.ip)
       }
+    })
+
+    function apply(lat, lng, source) {
+      setMe({ lat, lng, source })
+      ipPromise.then(() => saveMyLocation(lat, lng, ipValue))
     }
 
-    const ipPromise = getIpInfo().catch(() => null)
-    ipPromise.then((info) => info && setIp(info.ip))
-
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => applyLocation(pos.coords.latitude, pos.coords.longitude, 'GPS'),
+      (pos) => apply(pos.coords.latitude, pos.coords.longitude, 'GPS'),
       async () => {
         const info = await ipPromise
-        if (info) applyLocation(info.lat, info.lng, 'IP (approximate)')
+        if (info) apply(info.lat, info.lng, 'IP (approximate)')
       },
       { enableHighAccuracy: true },
     )
@@ -63,26 +76,49 @@ export default function MapPage() {
     return () => navigator.geolocation.clearWatch(watchId)
   }, [])
 
+  async function refresh() {
+    try {
+      setReports(await getReports())
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   async function handleReport() {
     if (!me) return alert('Still finding your location...')
-    const report = await createReport({ lat: me.lat, lng: me.lng })
-    setMyReportId(report.id)
-    setReports(await getReports())
+    try {
+      await createReport(me.lat, me.lng)
+      await refresh()
+    } catch (err) {
+      alert(err.message)
+    }
   }
 
   async function handleConfirm(id) {
-    await confirmReport(id)
-    setReports(await getReports())
+    if (!me) return alert('Still finding your location...')
+    try {
+      await confirmReport(id, me.lat, me.lng)
+      await refresh()
+      refreshProfile()
+    } catch (err) {
+      alert(err.message)
+    }
   }
 
   // Hold the button for 1.5 seconds to say the light is back
   function startHold() {
+    if (!myActive) return
+    const id = myActive.id
     setHolding(true)
     holdTimer.current = setTimeout(async () => {
       setHolding(false)
-      await markRestored(myReportId)
-      setMyReportId(null)
-      setReports(await getReports())
+      try {
+        await restoreReport(id)
+        await refresh()
+        refreshProfile()
+      } catch (err) {
+        alert(err.message)
+      }
     }, 1500)
   }
 
@@ -119,7 +155,8 @@ export default function MapPage() {
             <Popup>
               <b>Status:</b> {r.status}<br />
               <b>Confirmations:</b> {r.confirmations}<br />
-              {r.status === 'pending' && (
+              {r.mine && <i>This is your report</i>}
+              {!r.mine && r.status === 'pending' && (
                 <button onClick={() => handleConfirm(r.id)}>Yes, no light here</button>
               )}
             </Popup>
@@ -133,7 +170,7 @@ export default function MapPage() {
         </div>
       )}
 
-      {myReportId ? (
+      {myActive ? (
         <button
           className={holding ? 'btn report-btn restore-btn holding' : 'btn report-btn restore-btn'}
           onPointerDown={startHold}

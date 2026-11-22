@@ -1,16 +1,18 @@
 import { Link, useParams } from 'react-router-dom'
 import ChatBox from '../components/ChatBox'
+import useAuth from '../hooks/useAuth'
 import useFriends from '../hooks/useFriends'
-import { getStatus } from '../friendsApi'
-import { users } from '../data/users'
+import { dmRoom } from '../chatApi'
 
 export default function DirectMessage() {
   const { username } = useParams()
-  useFriends() // re-renders when a request is accepted
-  const person = users.find((u) => u.username === username)
-  const isFriend = getStatus(username) === 'friends'
+  const { profile } = useAuth()
+  const { friends, loaded } = useFriends()
+  const friend = friends.find((f) => f.username === username)
 
-  if (!person || !isFriend) {
+  if (!loaded) return <div className="center-note">Loading...</div>
+
+  if (!friend) {
     return (
       <div className="skill-page">
         <Link to="/friends" className="back-link">← Back to Friends</Link>
@@ -24,12 +26,12 @@ export default function DirectMessage() {
       <div className="dm-header">
         <Link to="/friends" className="back-link">← Back</Link>
         <div>
-          <b>{person.name}</b>
-          <div className="skill-meta">@{person.username}</div>
+          <b>{friend.full_name}</b>
+          <div className="skill-meta">@{friend.username}</div>
         </div>
       </div>
       <p className="dm-note">Messages can be reviewed by admins for safety.</p>
-      <ChatBox key={username} room={`dm-${username}`} autoReplyFrom={person.name.split(' ')[0]} />
+      <ChatBox key={friend.id} room={dmRoom(profile.id, friend.id)} />
     </div>
   )
 }

@@ -1,31 +1,70 @@
-const rooms = {  'dm-ada_obi': [
-    { id: 1, user: 'Ada Obi', text: 'Hey! I saw your outage report earlier. Is the light back?', time: Date.now() - 900000 },
-  ],
-  power: [
-    { id: 1, user: 'Chinedu', text: 'Light just went off in my area again', time: Date.now() - 600000 },
-    { id: 2, user: 'Amina', text: 'Same here, I just confirmed your report', time: Date.now() - 300000 },
-  ],
-  skills: [
-    { id: 1, user: 'Tunde', text: 'Need flyers printed? I need two shirts altered', time: Date.now() - 400000 },
-  ],
-}
-const listeners = {}
+import { supabase } from './supabaseClient'
 
-export function getMessages(room) {
-  return [...(rooms[room] || [])]
+const names = new Map()
+
+async function ensureNames(ids) {
+  const missing = [...new Set(ids)].filter((id) => !names.has(id))
+  if (missing.length === 0) return
+  const { data } = await supabase.from('user_directory').select('id, full_name').in('id', missing)
+  if (data) data.forEach((u) => names.set(u.id, u.full_name))
 }
 
-export function sendMessage(room, user, text) {
-  const msg = { id: Date.now() + Math.random(), user, text, time: Date.now() }
-  rooms[room] = [...(rooms[room] || []), msg]
-  const subs = listeners[room] || []
-  subs.forEach((cb) => cb(getMessages(room)))
-  return msg
+function toMessage(row, myId) {
+  return {
+    id: row.id,
+    mine: row.sender === myId,
+    user: names.get(row.sender) || 'Someone',
+    text: row.body,
+    time: row.created_at,
+  }
 }
 
-export function subscribe(room, cb) {
-  listeners[room] = [...(listeners[room] || []), cb]
+async function getMyId() {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.user?.id
+}
+
+export function dmRoom(a, b) {
+  const [x, y] = [a, b].sort()
+  return `dm:${x}:${y}`
+}
+
+export async function getMessages(room) {
+  const myId = await getMyId()
+  const { data, error } = await supabase
+    .from('messages')
+    .select('id, sender, body, created_at')
+    .eq('room', room)
+    .order('created_at', { ascending: true })
+    .limit(100)
+  if (error) throw new Error(error.message)
+  await ensureNames(data.map((m) => m.sender))
+  return data.map((m) => toMessage(m, myId))
+}
+
+export async function sendMessage(room, text) {
+  const myId = await getMyId()
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({ room, sender: myId, body: text })
+    .select('id, sender, body, created_at')
+    .single()
+  if (error) throw new Error(error.message)
+  await ensureNames([data.sender])
+  return toMessage(data, myId)
+}
+
+export function subscribe(room, onMessage) {
+  const channel = supabase
+    .channel(`chat-${room}-${Math.random().toString(36).slice(2)}`)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
+      if (payload.new.room !== room) return
+      const myId = await getMyId()
+      await ensureNames([payload.new.sender])
+      onMessage(toMessage(payload.new, myId))
+    })
+    .subscribe()
   return () => {
-    listeners[room] = listeners[room].filter((l) => l !== cb)
+    supabase.removeChannel(channel)
   }
 }

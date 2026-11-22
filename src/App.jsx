@@ -8,31 +8,39 @@ import FriendsPage from './pages/FriendsPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminLogin from './pages/AdminLogin'
 import AdminSignup from './pages/AdminSignup'
+import AdminDashboard from './pages/AdminDashboard'
+import DevLogin from './pages/DevLogin'
 import LocationGate from './components/LocationGate'
 import Navbar from './components/Navbar'
+import PublicOnly from './components/PublicOnly'
 import RequireAuth from './components/RequireAuth'
 import RequireAdmin from './components/RequireAdmin'
 import WalletPage from './pages/WalletPage'
 import Dashboard from './pages/Dashboard'
 import AuthPage from './pages/AuthPage'
+import useAuth from './hooks/useAuth'
 
-const NO_NAVBAR = ['/', '/login', '/signup', '/admin/login', '/admin/signup']
+const NO_NAVBAR = ['/', '/login', '/signup', '/dev-login', '/admin/login', '/admin/signup']
 
 export default function App() {
   const { pathname } = useLocation()
-  const loggedIn = localStorage.getItem('loggedIn') === 'yes'
+  const { profile } = useAuth()
 
   return (
     <LocationGate>
-      {loggedIn && !NO_NAVBAR.includes(pathname) && <Navbar />}
+      {profile && !NO_NAVBAR.includes(pathname) && <Navbar />}
       <Routes>
-        {/* Visible before login */}
-        <Route path="/login" element={<AuthPage />} />
-        <Route path="/signup" element={<AuthPage />} />
+        {/* Signed-out only: signed-in users are sent to the map */}
+        <Route element={<PublicOnly />}>
+          <Route path="/login" element={<AuthPage />} />
+          <Route path="/signup" element={<AuthPage />} />
+          <Route path="/dev-login" element={<DevLogin />} />
+        </Route>
+
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/signup" element={<AdminSignup />} />
 
-        {/* Everything else needs a logged-in user */}
+        {/* Needs a signed-in user */}
         <Route element={<RequireAuth />}>
           <Route path="/" element={<MapPage />} />
           <Route path="/skills" element={<SkillSwapPage />} />
@@ -47,7 +55,7 @@ export default function App() {
 
         {/* Admins only */}
         <Route element={<RequireAdmin />}>
-          <Route path="/admin" element={<h2 style={{ padding: 20 }}>Admin dashboard (coming soon)</h2>} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Routes>
     </LocationGate>
