@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AuthCard from '../components/AuthCard'
 import AuthField from '../components/AuthField'
 import { MailIcon, LockIcon, ShieldIcon } from '../components/icons'
@@ -7,6 +7,7 @@ import { adminSignIn } from '../adminAuth'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
+  const notice = useLocation().state?.notice
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -62,6 +63,7 @@ export default function AdminLogin() {
             </button>
           }
         />
+        {notice && <div className="auth-notice">{notice}</div>}
         {error && <div className="auth-error" role="alert">{error}</div>}
         <button className="auth-submit" type="submit" disabled={busy}>
           <ShieldIcon size={20} />

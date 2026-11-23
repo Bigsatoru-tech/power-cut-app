@@ -22,7 +22,9 @@ export default function AdminSignup() {
     setBusy(true)
     try {
       await adminSignUp(email, password)
-      navigate('/admin')
+      navigate('/admin/login', {
+        state: { notice: 'Request sent. You can sign in once an existing admin approves your account.' },
+      })
     } catch (err) {
       setError(err.message)
     } finally {
