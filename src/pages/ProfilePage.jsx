@@ -40,6 +40,10 @@ export default function ProfilePage() {
         <ThemeToggle />
       </div>
 
+      <Link to="/dashboard" className="profile-row profile-link">
+        <span>Community dashboard</span>
+        <span>→</span>
+      </Link>
       <button className="logout-btn" onClick={logOut}>
         <LogOutIcon size={18} /> Log out
       </button>

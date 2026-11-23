@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getReports } from "../api";
 import { getSkills } from "../skillsApi";
-import { currentUser, getLevelInfo } from "../data/currentUser";
-import { walletData } from "../data/walletData";
+import { getWalletTransactions } from "../walletApi";
+import { getLevelInfo } from "../data/currentUser";
+import useAuth from "../hooks/useAuth";
 import ThemeToggle from "../components/ThemeToggle";
 
 const dashboardTabs = [
@@ -14,35 +15,41 @@ const dashboardTabs = [
 ];
 
 export default function Dashboard() {
+  const { profile, session, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [reports, setReports] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
-  const savedUser = JSON.parse(localStorage.getItem("powerCutUser") || "null");
-
-  const displayName = savedUser?.username || currentUser.name;
+  const displayName = profile.username;
   const navigate = useNavigate();
 
-  const levelInfo = getLevelInfo(currentUser.xp);
+  const levelInfo = getLevelInfo(profile.xp);
 
   useEffect(() => {
     async function loadDashboard() {
-      const [reportData, skillData] = await Promise.all([
+      const [reportData, skillData, transactionData] = await Promise.all([
         getReports(),
         getSkills(),
+        getWalletTransactions(profile.id),
       ]);
 
       setReports(reportData);
       setSkills(skillData);
+      setTransactions(transactionData);
     }
 
-    loadDashboard();
-  }, []);
+    loadDashboard().catch(console.error);
+  }, [profile.id]);
 
-  function handleLogout() {
-    localStorage.removeItem("loggedIn");
+  async function handleLogout() {
+    await signOut();
     navigate("/login");
   }
+
+  const pendingRewards = transactions
+    .filter((transaction) => transaction.status === "pending")
+    .reduce((total, transaction) => total + transaction.amount, 0);
 
   const activeOutages = reports.filter(
     (report) => report.status === "pending",
@@ -66,11 +73,11 @@ export default function Dashboard() {
             ? "Power restored"
             : "New outage reported",
       description: `${report.confirmations} community confirmations`,
-      date: report.createdAt,
+      date: report.created_at,
       type: report.status,
     })),
 
-    ...walletData.transactions.map((transaction) => ({
+    ...transactions.map((transaction) => ({
       id: `transaction-${transaction.id}`,
       title: transaction.title,
       description: transaction.description,
@@ -158,7 +165,7 @@ export default function Dashboard() {
 
               <div className="dashboard-level">
                 <span>LEVEL {levelInfo.level}</span>
-                <strong>{currentUser.xp} XP</strong>
+                <strong>{profile.xp} XP</strong>
               </div>
             </section>
 
@@ -188,8 +195,8 @@ export default function Dashboard() {
               <div className="dashboard-wallet">
                 <div>
                   <p>YOUR XP BALANCE</p>
-                  <h2>{walletData.balance} XP</h2>
-                  <span>{walletData.pendingRewards} XP pending rewards</span>
+                  <h2>{profile.xp} XP</h2>
+                  <span>{pendingRewards} XP pending rewards</span>
                 </div>
 
                 <Link to="/wallet" className="dashboard-action">
@@ -215,7 +222,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="xp-progress-footer">
-                  <span>{currentUser.xp} XP earned</span>
+                  <span>{profile.xp} XP earned</span>
 
                   <span>
                     {levelInfo.level >= 3
@@ -390,22 +397,27 @@ export default function Dashboard() {
                 <div className="dashboard-profile-details">
                   <div>
                     <span>Username</span>
-                    <strong>{savedUser?.username || "Not provided"}</strong>
+                    <strong>{profile.username}</strong>
                   </div>
 
                   <div>
                     <span>Email address</span>
-                    <strong>{savedUser?.email || "Not provided"}</strong>
+                    <strong>{session.user.email || "Not provided"}</strong>
                   </div>
 
                   <div>
                     <span>Phone number</span>
-                    <strong>{savedUser?.phone || "Not provided"}</strong>
+                    <strong>{profile.phone || "Not provided"}</strong>
+                  </div>
+
+                  <div>
+                    <span>Area</span>
+                    <strong>{profile.area || "Not provided"}</strong>
                   </div>
 
                   <div>
                     <span>XP earned</span>
-                    <strong>{currentUser.xp} XP</strong>
+                    <strong>{profile.xp} XP</strong>
                   </div>
                 </div>
               </div>

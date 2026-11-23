@@ -1,13 +1,34 @@
-import { walletData } from "../data/walletData";
+import { useEffect, useState } from "react";
+import useAuth from "../hooks/useAuth";
+import { getWalletTransactions } from "../walletApi";
 
 export default function WalletPage() {
-  const pendingTransactions = walletData.transactions.filter(
+  const { profile } = useAuth();
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    getWalletTransactions(profile.id).then(setTransactions).catch(console.error);
+  }, [profile.id]);
+
+  const pendingTransactions = transactions.filter(
     (transaction) => transaction.status === "pending",
   );
 
-  const creditedXP = walletData.transactions
+  const creditedXP = transactions
     .filter((transaction) => transaction.status === "credited")
     .reduce((total, transaction) => total + transaction.amount, 0);
+
+  const pendingXP = pendingTransactions.reduce(
+    (total, transaction) => total + transaction.amount,
+    0,
+  );
+
+  const walletData = {
+    balance: profile.xp,
+    totalEarned: profile.xp,
+    pendingRewards: pendingXP,
+    transactions,
+  };
 
   return (
     <main className="wallet-page">

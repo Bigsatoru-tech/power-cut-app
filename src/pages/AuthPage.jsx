@@ -1,19 +1,22 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { signInUser, signUpUser } from "../userAuth";
+import AreaSelect from "../components/AreaSelect";
 
 export default function AuthPage() {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const isLogin = location.pathname !== "/signup";
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
     phone: "",
     email: "",
+    area: "",
     identifier: "",
     password: "",
     confirmPassword: "",
@@ -31,7 +34,7 @@ export default function AuthPage() {
     setSuccess("");
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     setError("");
@@ -39,12 +42,12 @@ export default function AuthPage() {
 
     if (isLogin) {
       if (!formData.identifier.trim() || !formData.password) {
-        setError("Please enter your username/email and password.");
+        setError("Please enter your email and password.");
         return;
       }
     } else {
-      if (formData.username.trim().length < 3) {
-        setError("Username must contain at least 3 characters.");
+      if (!/^[A-Za-z0-9_]{3,20}$/.test(formData.username.trim())) {
+        setError("Username must be 3 to 20 letters, numbers or underscores.");
         return;
       }
 
@@ -52,6 +55,16 @@ export default function AuthPage() {
 
       if (!phoneRegex.test(formData.phone.trim())) {
         setError("Please enter a valid phone number.");
+        return;
+      }
+
+      if (!formData.email.trim()) {
+        setError("Please enter your email address.");
+        return;
+      }
+
+      if (!formData.area) {
+        setError("Please choose your area.");
         return;
       }
 
@@ -66,51 +79,32 @@ export default function AuthPage() {
       }
     }
 
-    if (isLogin) {
-      const savedUser = JSON.parse(localStorage.getItem("powerCutUser"));
+    setBusy(true);
 
-      if (!savedUser) {
-        setError("No account found. Please sign up first.");
-        return;
+    try {
+      if (isLogin) {
+        await signInUser(formData.identifier.trim(), formData.password);
+        setSuccess("Login successful!");
+      } else {
+        const result = await signUpUser({
+          email: formData.email.trim(),
+          password: formData.password,
+          username: formData.username,
+          phone: formData.phone.trim(),
+          area: formData.area,
+        });
+
+        setSuccess(
+          result.session
+            ? "Account created successfully!"
+            : "Account created. Check your email to confirm it, then log in.",
+        );
       }
-
-      const identifier = formData.identifier.trim().toLowerCase();
-
-      if (
-        identifier !== savedUser.username.toLowerCase() &&
-        identifier !== savedUser.email.toLowerCase()
-      ) {
-        setError("Username or email is incorrect.");
-        return;
-      }
-
-      if (formData.password !== savedUser.password) {
-        setError("Incorrect password.");
-        return;
-      }
-
-      localStorage.setItem("loggedIn", "yes");
-      setSuccess("Login successful!");
-
-      setTimeout(() => navigate("/"), 700);
-    } else {
-      if (!formData.email.trim()) {
-        setError("Please enter your email address.");
-        return;
-      }
-
-      const savedUser = {
-        username: formData.username.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
-      };
-
-      localStorage.setItem("powerCutUser", JSON.stringify(savedUser));
-
-      setSuccess("Account created successfully!");
-
-      setTimeout(() => navigate("/dashboard"), 700);
+      // When the sign-in works, the app sends you to the map automatically.
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -171,17 +165,29 @@ export default function AuthPage() {
                   required
                 />
               </div>
+
+              <div className="field-group">
+                <label htmlFor="area">Your area</label>
+                <AreaSelect
+                  value={formData.area}
+                  onChange={(area) => {
+                    setFormData((prev) => ({ ...prev, area }));
+                    setError("");
+                  }}
+                />
+              </div>
             </>
           )}
 
           {isLogin && (
             <div className="field-group">
-              <label htmlFor="identifier">Username or email</label>
+              <label htmlFor="identifier">Email address</label>
               <input
                 id="identifier"
                 name="identifier"
-                type="text"
-                placeholder="Enter your username or email"
+                type="email"
+                autoComplete="email"
+                placeholder="Enter your email"
                 value={formData.identifier}
                 onChange={handleChange}
                 required
@@ -234,8 +240,8 @@ export default function AuthPage() {
 
           {success && <div className="auth-success">{success}</div>}
 
-          <button type="submit" className="btn auth-submit">
-            {isLogin ? "Log in" : "Create account"}
+          <button type="submit" className="btn auth-submit" disabled={busy}>
+            {busy ? "Please wait..." : isLogin ? "Log in" : "Create account"}
           </button>
         </form>
 
