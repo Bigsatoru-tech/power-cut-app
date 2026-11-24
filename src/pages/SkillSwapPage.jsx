@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom'
 import XpBadge from '../components/XpBadge'
 import CommunityChat from '../components/CommunityChat'
 import { getSkills, initials } from '../skillsApi'
-import { currentUser, getLevelInfo } from '../data/currentUser'
+import useAuth from '../hooks/useAuth'
 
 const CATEGORIES = ['All', 'Electrical', 'Design', 'Printing', 'Tech', 'Tailoring', 'Tutoring']
 
 export default function SkillSwapPage() {
+  const { profile } = useAuth()
   const [skills, setSkills] = useState([])
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')
-  const myLevel = getLevelInfo(currentUser.xp).level
 
   useEffect(() => {
-    getSkills().then(setSkills)
+    getSkills().then(setSkills).catch(console.error)
   }, [])
 
   const visible = useMemo(() => {
@@ -52,8 +52,10 @@ export default function SkillSwapPage() {
 
       <div className="skill-count">{visible.length} skills available · Barter with XP · No money</div>
 
+      {visible.length === 0 && <div className="empty-note">No skills yet. Be the first to offer one.</div>}
+
       {visible.map((s) => {
-        const locked = myLevel < s.requiredLevel
+        const locked = profile.level < s.requiredLevel
         return (
           <div key={s.id} className={locked ? 'skill-card locked' : 'skill-card'}>
             <div className="skill-card-top">

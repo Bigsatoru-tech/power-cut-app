@@ -76,6 +76,7 @@ export function CloseIcon(props) {
     </Svg>
   )
 }
+
 export function FriendsIcon(props) {
   return (
     <Svg {...props}>

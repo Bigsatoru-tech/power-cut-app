@@ -3801,3 +3801,111 @@ body,
   transform: scale(0.7);
   transform-origin: top left;
 }
+/* ---------- Backend extras ---------- */
+.center-note {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  opacity: 0.7; font-size: 14px;
+}
+.chat-error { padding: 6px 12px; font-size: 12px; color: var(--red); }
+/* ---------- Backend extras ---------- */
+.center-note {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  opacity: 0.7; font-size: 14px;
+}
+.chat-error { padding: 6px 12px; font-size: 12px; color: var(--red); }
+.profile-link { color: var(--text); text-decoration: none; }
+
+/* Area dropdown inside Dev 2's sign-up form */
+.field-group select {
+  width: 100%; padding: 12px 14px; border-radius: 12px;
+  font-family: inherit; font-size: 15px; color: var(--text); background: var(--bg);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+/* ---------- Admin sign in / sign up ---------- */
+.auth-screen {
+  position: fixed; inset: 0; z-index: 2500; overflow-y: auto; display: flex;
+  padding: 24px 16px;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(229, 57, 53, 0.22), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(67, 160, 71, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(251, 192, 45, 0.12), transparent 40%),
+    var(--bg);
+}
+.auth-screen .auth-card {
+  position: relative; display: block; width: 100%; max-width: 420px; margin: auto;
+  padding: 28px 22px 24px; background: var(--card); color: var(--text);
+  border: 1px solid rgba(229, 57, 53, 0.35); border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(229, 57, 53, 0.12);
+}
+.auth-close {
+  position: absolute; top: 16px; right: 16px; width: 36px; height: 36px;
+  border: none; border-radius: 50%; background: rgba(148, 163, 184, 0.18); color: var(--text);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.auth-logo {
+  width: 64px; height: 64px; margin: 4px auto 14px; border-radius: 18px;
+  background: var(--bg); border: 1px solid rgba(148, 163, 184, 0.25); color: var(--yellow);
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-title { text-align: center; font-size: 24px; font-weight: 700; letter-spacing: 0.04em; }
+.auth-subtitle { text-align: center; font-size: 13.5px; opacity: 0.75; margin: 6px 0 20px; }
+.auth-field { margin-bottom: 14px; }
+.auth-label-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px; font-size: 13px; font-weight: 600;
+}
+.auth-input {
+  display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 14px;
+  border-radius: 14px; background: var(--bg); border: 1px solid rgba(148, 163, 184, 0.3);
+}
+.auth-input:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.2); }
+.auth-input input {
+  flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: inherit; font-size: 15px;
+}
+.auth-input-icon { display: flex; opacity: 0.6; }
+.auth-eye {
+  display: flex; padding: 4px; background: none; border: none;
+  color: var(--text); opacity: 0.7; cursor: pointer;
+}
+.auth-screen .auth-submit {
+  width: 100%; height: 52px; margin-top: 6px; border: none; border-radius: 14px;
+  background: var(--red); color: #fff; font-family: inherit; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
+}
+.auth-screen .auth-submit:disabled { opacity: 0.6; cursor: wait; }
+.auth-screen .auth-error {
+  margin-bottom: 12px; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+  color: var(--red); background: rgba(229, 57, 53, 0.12); border: 1px solid rgba(229, 57, 53, 0.4);
+}
+.auth-link {
+  padding: 0; background: none; border: none; cursor: pointer;
+  color: var(--red); font-family: inherit; font-size: 13px; font-weight: 600;
+}
+.auth-footer { margin-top: 18px; text-align: center; font-size: 13.5px; }
+.auth-footer a { color: var(--red); font-weight: 700; text-decoration: underline; }
+.auth-notice {
+  margin-bottom: 12px; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+  color: var(--green); background: rgba(67, 160, 71, 0.12); border: 1px solid rgba(67, 160, 71, 0.4);
+}
+
+/* ---------- Admin dashboard ---------- */
+.admin-page {
+  flex: 1; min-height: 0; overflow-y: auto;
+  width: 100%; max-width: 760px; margin: 0 auto; padding: 20px 16px 60px;
+}
+.admin-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.admin-search { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+.admin-search .skill-search { margin: 0; }
+.admin-card {
+  margin-bottom: 14px; padding: 16px; border-radius: 16px;
+  background: var(--card); border: 1px solid rgba(148, 163, 184, 0.15);
+}
+.admin-grid {
+  display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px;
+  margin: 12px 0; font-size: 14px; word-break: break-word;
+}
+.admin-grid span:nth-child(odd) { opacity: 0.65; }
+.admin-grid a { color: var(--green); font-weight: 600; }
+.admin-convo { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }

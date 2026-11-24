@@ -1,16 +1,23 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getSkillById, initials } from '../skillsApi'
-import { currentUser, getLevelInfo } from '../data/currentUser'
+import { sendRequest } from '../friendsApi'
+import useAuth from '../hooks/useAuth'
 import useFriends from '../hooks/useFriends'
-import { getStatus, sendRequest } from '../friendsApi'
 
 export default function SkillDetail() {
   const { id } = useParams()
-  useFriends() // re-renders when a request changes
-  const skill = getSkillById(id)
-  const myLevel = getLevelInfo(currentUser.xp).level
+  const { profile } = useAuth()
+  const { statusOf, reload } = useFriends()
+  const [skill, setSkill] = useState(undefined) // undefined = loading, null = not found
 
-  if (!skill) {
+  useEffect(() => {
+    getSkillById(id).then(setSkill).catch(() => setSkill(null))
+  }, [id])
+
+  if (skill === undefined) return <div className="center-note">Loading...</div>
+
+  if (skill === null) {
     return (
       <div className="skill-page">
         <Link to="/skills" className="back-link">← Back</Link>
@@ -19,8 +26,17 @@ export default function SkillDetail() {
     )
   }
 
-  const locked = myLevel < skill.requiredLevel
-  const status = getStatus(skill.username)
+  const locked = profile.level < skill.requiredLevel
+  const status = statusOf(skill.userId)
+
+  async function request() {
+    try {
+      await sendRequest(skill.username, skill.id)
+      reload()
+    } catch (err) {
+      alert(err.message)
+    }
+  }
 
   let action
   if (skill.mine) {
@@ -36,12 +52,7 @@ export default function SkillDetail() {
   } else {
     action = (
       <>
-        <button
-          className="contact-btn"
-          onClick={() => sendRequest(skill.username, { id: skill.id, title: skill.offers })}
-        >
-          Send friend request
-        </button>
+        <button className="contact-btn" onClick={request}>Send friend request</button>
         <div className="skill-note">Once they accept, you can chat about the swap.</div>
       </>
     )

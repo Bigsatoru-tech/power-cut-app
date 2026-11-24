@@ -1,7 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { isAdminLoggedIn } from '../adminAuth'
+import useAuth from '../hooks/useAuth'
 
 export default function RequireAdmin() {
-  if (!isAdminLoggedIn()) return <Navigate to="/admin/login" replace />
+  const { profile, loading } = useAuth()
+
+  if (loading) return <div className="center-note">Loading...</div>
+  if (!profile || profile.role !== 'admin') return <Navigate to="/admin/login" replace />
   return <Outlet />
 }

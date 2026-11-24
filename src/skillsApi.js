@@ -1,46 +1,49 @@
-import { currentUser, getLevelInfo } from './data/currentUser'
+import { supabase } from './supabaseClient'
 
-let skills = []
-let seeded = false
-
-function seedSkills() {
-  if (seeded) return
-  seeded = true
-  skills = [
-    { id: 1, username: 'chinedu_ok', name: 'Chinedu Okafor', category: 'Electrical', level: 1, offers: 'Wall socket & breaker replacement', wants: 'Simple flyer or WhatsApp status graphic', requiredLevel: 1 },
-    { id: 2, username: 'tunde_adeyemi', name: 'Tunde Adeyemi', category: 'Printing', level: 2, offers: '50 A5 flyers or sticker batch print', wants: 'Alterations on 2 Ankara shirts', requiredLevel: 2 },
-    { id: 3, username: 'ngozi_eze', name: 'Ngozi Eze', category: 'Tailoring', level: 2, offers: 'Trouser hemming & zipper replacement', wants: 'Help writing a CV', requiredLevel: 2 },
-    { id: 4, username: 'amina_bello', name: 'Amina Bello', category: 'Design', level: 3, offers: 'Full logo & brand design', wants: 'Wiring check for a small shop', requiredLevel: 3 },
-    { id: 5, username: 'emeka_nwosu', name: 'Emeka Nwosu', category: 'Tech', level: 1, offers: 'Phone and laptop troubleshooting', wants: 'Short video edit for my shop', requiredLevel: 1 },
-    { id: 6, username: 'fatima_sani', name: 'Fatima Sani', category: 'Tutoring', level: 2, offers: 'Maths and physics lessons', wants: 'Help setting up a small website', requiredLevel: 2 },
-  ]
+function normalize(s) {
+  return {
+    id: s.id,
+    userId: s.user_id,
+    username: s.username,
+    name: s.full_name,
+    category: s.category,
+    level: s.level,
+    offers: s.offers,
+    wants: s.wants,
+    requiredLevel: s.required_level,
+    mine: s.mine,
+  }
 }
 
 export async function getSkills() {
-  seedSkills()
-  return [...skills]
+  const { data, error } = await supabase
+    .from('skills_feed')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data.map(normalize)
 }
 
-export function getSkillById(id) {
-  seedSkills()
-  return skills.find((s) => s.id === Number(id))
+export async function getSkillById(id) {
+  const { data, error } = await supabase.from('skills_feed').select('*').eq('id', id).maybeSingle()
+  if (error) throw new Error(error.message)
+  return data ? normalize(data) : null
 }
 
-export async function addSkill(data) {
-  seedSkills()
-  skills = [
-    {
-      id: Date.now(),
-      username: currentUser.username,
-      name: currentUser.name,
-      level: getLevelInfo(currentUser.xp).level,
-      mine: true,
-      ...data,
-    },
-    ...skills,
-  ]
+export async function addSkill({ category, offers, wants, requiredLevel }) {
+  const { data } = await supabase.auth.getSession()
+  const user = data.session?.user
+  if (!user) throw new Error('Please sign in again')
+  const { error } = await supabase.from('skills').insert({
+    user_id: user.id,
+    category,
+    offers: offers.trim(),
+    wants: wants.trim(),
+    required_level: requiredLevel,
+  })
+  if (error) throw new Error('Please fill in both boxes (at least 3 characters each)')
 }
 
 export function initials(name) {
-  return name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+  return (name || '?').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
 }

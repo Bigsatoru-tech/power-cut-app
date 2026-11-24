@@ -7,6 +7,7 @@ const CATEGORIES = ['Electrical', 'Design', 'Printing', 'Tech', 'Tailoring', 'Tu
 export default function OfferSkill() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ category: 'Electrical', offers: '', wants: '', requiredLevel: 1 })
+  const [error, setError] = useState('')
 
   function update(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -14,8 +15,13 @@ export default function OfferSkill() {
 
   async function submit(e) {
     e.preventDefault()
-    await addSkill({ ...form, requiredLevel: Number(form.requiredLevel) })
-    navigate('/skills')
+    setError('')
+    try {
+      await addSkill({ ...form, requiredLevel: Number(form.requiredLevel) })
+      navigate('/skills')
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   return (
@@ -39,6 +45,7 @@ export default function OfferSkill() {
           <option value={3}>Level 3</option>
         </select>
       </label>
+      {error && <div className="auth-error" role="alert">{error}</div>}
       <button className="btn" type="submit">Post my skill</button>
     </form>
   )
