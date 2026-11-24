@@ -40,6 +40,12 @@ export default function ProfilePage() {
         <ThemeToggle />
       </div>
 
+      {profile.role === 'admin' && (
+        <Link to="/admin" className="profile-row profile-link">
+          <span>Admin dashboard</span>
+          <span>→</span>
+        </Link>
+      )}
       <Link to="/dashboard" className="profile-row profile-link">
         <span>Community dashboard</span>
         <span>→</span>
