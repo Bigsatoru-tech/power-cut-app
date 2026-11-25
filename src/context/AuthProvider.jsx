@@ -9,7 +9,10 @@ async function fetchProfile(userId) {
     .select('id, username, full_name, phone, area, xp, role')
     .eq('id', userId)
     .single()
-  if (error || !data) return null
+    if (error || !data) {
+    console.error('Profile load failed:', error)
+    return null
+  }
   return {
     id: data.id,
     username: data.username,
