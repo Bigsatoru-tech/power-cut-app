@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getReports } from "../api";
+import { getReports, getReportHistory } from "../api";
 import { getSkills } from "../skillsApi";
 import { getWalletTransactions } from "../walletApi";
 import { getLevelInfo } from "../data/currentUser";
 import useAuth from "../hooks/useAuth";
-import ThemeToggle from "../components/ThemeToggle";
+import EditUsername from "../components/EditUsername";
+import { timeAgo } from "../utils/time";
 
 const dashboardTabs = [
   { id: "overview", label: "Overview", icon: "⌂" },
@@ -14,12 +15,19 @@ const dashboardTabs = [
   { id: "profile", label: "Profile", icon: "◉" },
 ];
 
+function historyText(item) {
+  if (item.status === "restored") return `Light was back in ${item.area}`;
+  if (item.status === "verified") return `No light in ${item.area}`;
+  return `Unconfirmed report of no light in ${item.area}`;
+}
+
 export default function Dashboard() {
   const { profile, session, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [reports, setReports] = useState([]);
   const [skills, setSkills] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [history, setHistory] = useState([]);
 
   const displayName = profile.username;
   const navigate = useNavigate();
@@ -28,15 +36,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function loadDashboard() {
-      const [reportData, skillData, transactionData] = await Promise.all([
+      const [reportData, skillData, transactionData, historyData] = await Promise.all([
         getReports(),
         getSkills(),
         getWalletTransactions(profile.id),
+        getReportHistory().catch(() => []),
       ]);
 
       setReports(reportData);
       setSkills(skillData);
       setTransactions(transactionData);
+      setHistory(historyData);
     }
 
     loadDashboard().catch(console.error);
@@ -150,8 +160,6 @@ export default function Dashboard() {
             <p>POWER CUT BOUNTIES</p>
             <span>Community dashboard</span>
           </div>
-
-          <ThemeToggle />
         </header>
 
         {activeTab === "overview" && (
@@ -279,6 +287,31 @@ export default function Dashboard() {
 
               <ActivityList activities={activities.slice(0, 3)} />
             </section>
+
+            <section className="dashboard-history">
+              <div className="dashboard-section-heading">
+                <div>
+                  <h2>Past outage updates</h2>
+                  <p>
+                    Reports leave the map after 1 to 2 hours. Here is what happened
+                    in the last 2 days, in every area.
+                  </p>
+                </div>
+              </div>
+
+              {history.length === 0 ? (
+                <p className="activity-empty">Nothing in the last 2 days.</p>
+              ) : (
+                <ul className="history-list">
+                  {history.map((item) => (
+                    <li key={item.id}>
+                      <span>{historyText(item)}</span>
+                      <small>{timeAgo(item.event_at)}</small>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </div>
         )}
 
@@ -397,7 +430,7 @@ export default function Dashboard() {
                 <div className="dashboard-profile-details">
                   <div>
                     <span>Username</span>
-                    <strong>{profile.username}</strong>
+                    <EditUsername />
                   </div>
 
                   <div>

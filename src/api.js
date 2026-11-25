@@ -42,3 +42,19 @@ export async function saveMyLocation(lat, lng, ip) {
   })
   if (error) console.error(error.message)
 }
+export async function getReportHistory() {
+  const { data, error } = await supabase.rpc('report_history')
+  if (error) throw new Error(error.message)
+  return data
+}
+
+// Calls onChange the moment any report is created, confirmed or restored
+export function subscribeToReportChanges(onChange) {
+  const channel = supabase
+    .channel(`report-pings-${Math.random().toString(36).slice(2)}`)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'report_pings' }, onChange)
+    .subscribe()
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}

@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup, ZoomControl } from 'react-leaflet'
-import { getReports, createReport, confirmReport, restoreReport, saveMyLocation } from '../api'
+import {
+  getReports, createReport, confirmReport, restoreReport, saveMyLocation, subscribeToReportChanges,
+} from '../api'
 import FlyOnce from '../components/FlyOnce'
 import CommunityChat from '../components/CommunityChat'
 import MapHud from '../components/MapHud'
 import useAuth from '../hooks/useAuth'
+import { timeLeft } from '../utils/time'
 
 let infoShownOnce = false
 
@@ -38,14 +41,18 @@ export default function MapPage() {
 
   useEffect(() => () => clearTimeout(holdTimer.current), [])
 
-  // Load reports now and every 10 seconds
+  // Load reports now, again instantly whenever anyone reports, and every 30 seconds as a backup
   useEffect(() => {
     function load() {
       getReports().then(setReports).catch(console.error)
     }
     load()
-    const timer = setInterval(load, 10000)
-    return () => clearInterval(timer)
+    const unsubscribe = subscribeToReportChanges(load)
+    const timer = setInterval(load, 30000)
+    return () => {
+      unsubscribe()
+      clearInterval(timer)
+    }
   }, [])
 
   // Find the user: GPS first, IP as a fallback, and save it for the admins
@@ -159,6 +166,7 @@ export default function MapPage() {
               {!r.mine && r.status === 'pending' && (
                 <button onClick={() => handleConfirm(r.id)}>Yes, no light here</button>
               )}
+              {r.expires_at && <div className="popup-faded">Disappears in {timeLeft(r.expires_at)}</div>}
             </Popup>
           </CircleMarker>
         ))}

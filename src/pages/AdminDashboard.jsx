@@ -105,9 +105,9 @@ export default function AdminDashboard() {
         <div className="admin-card">
           <b>Direct messages of @{chats.username}</b>
           {Object.keys(chats.rooms).length === 0 && <div className="empty-note">No direct messages.</div>}
-          {Object.entries(chats.rooms).map(([room, msgs], i) => (
+                    {Object.entries(chats.rooms).map(([room, msgs]) => (
             <div key={room} className="admin-convo">
-              <div className="friends-subtitle">Conversation {i + 1}</div>
+                            <div className="friends-subtitle">Conversation with @{msgs[0].partner_username || 'unknown'}</div>
               {msgs.map((m, j) => (
                 <div className="msg" key={j}>
                   <div className="msg-user">

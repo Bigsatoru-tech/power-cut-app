@@ -3,6 +3,7 @@ import { getLevelInfo } from '../data/currentUser'
 import { initials } from '../skillsApi'
 import useAuth from '../hooks/useAuth'
 import ThemeToggle from '../components/ThemeToggle'
+import EditUsername from '../components/EditUsername'
 import { LogOutIcon } from '../components/icons'
 
 export default function ProfilePage() {
@@ -25,8 +26,10 @@ export default function ProfilePage() {
 
       <div className="profile-card">
         <div className="profile-avatar">{initials(profile.name)}</div>
-        <h3>{profile.name}</h3>
-        <div className="skill-meta">@{profile.username}{profile.area ? ` · ${profile.area}` : ''}</div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <EditUsername prefix="@" />
+        </div>
+        {profile.area && <div className="skill-meta">{profile.area}</div>}
         <div className="profile-xp">{profile.xp} XP</div>
         <div className="profile-level">
           Level {level}
@@ -46,10 +49,12 @@ export default function ProfilePage() {
           <span>→</span>
         </Link>
       )}
+
       <Link to="/dashboard" className="profile-row profile-link">
         <span>Community dashboard</span>
         <span>→</span>
       </Link>
+
       <button className="logout-btn" onClick={logOut}>
         <LogOutIcon size={18} /> Log out
       </button>
