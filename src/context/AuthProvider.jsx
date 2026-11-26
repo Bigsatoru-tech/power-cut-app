@@ -6,8 +6,7 @@ import { getLevelInfo } from '../data/currentUser'
 async function fetchProfile(userId) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, full_name, phone, area, xp, role')
-    .eq('id', userId)
+        .select('id, username, full_name, phone, area, xp, role, is_moderator')
     .single()
     if (error || !data) {
     console.error('Profile load failed:', error)
@@ -21,6 +20,7 @@ async function fetchProfile(userId) {
     area: data.area,
     xp: data.xp,
     role: data.role,
+        isModerator: !!data.is_moderator,
     level: getLevelInfo(data.xp).level,
   }
 }

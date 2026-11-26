@@ -9,8 +9,8 @@ export async function getReports() {
   return data
 }
 
-export async function createReport(lat, lng) {
-  const { error } = await supabase.rpc('create_report', { p_lat: lat, p_lng: lng })
+export async function createReport(lat, lng, place = null) {
+  const { error } = await supabase.rpc('create_report', { p_lat: lat, p_lng: lng, p_place: place })
   if (error) throw new Error(error.message)
 }
 

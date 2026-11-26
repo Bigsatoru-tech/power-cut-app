@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { signInUser, signUpUser } from "../userAuth";
-import AreaSelect from "../components/AreaSelect";
+import { cleanPhone, isValidPhone, PHONE_HINT } from "../phone";
 
 export default function AuthPage() {
   const location = useLocation();
@@ -16,7 +16,6 @@ export default function AuthPage() {
     username: "",
     phone: "",
     email: "",
-    area: "",
     identifier: "",
     password: "",
     confirmPassword: "",
@@ -51,20 +50,18 @@ export default function AuthPage() {
         return;
       }
 
-      const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
+      if (!formData.phone.trim()) {
+        setError("A phone number is required to create an account.");
+        return;
+      }
 
-      if (!phoneRegex.test(formData.phone.trim())) {
-        setError("Please enter a valid phone number.");
+      if (!isValidPhone(formData.phone)) {
+        setError(PHONE_HINT);
         return;
       }
 
       if (!formData.email.trim()) {
         setError("Please enter your email address.");
-        return;
-      }
-
-      if (!formData.area) {
-        setError("Please choose your area.");
         return;
       }
 
@@ -90,8 +87,7 @@ export default function AuthPage() {
           email: formData.email.trim(),
           password: formData.password,
           username: formData.username,
-          phone: formData.phone.trim(),
-          area: formData.area,
+          phone: cleanPhone(formData.phone),
         });
 
         setSuccess(
@@ -163,17 +159,6 @@ export default function AuthPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                />
-              </div>
-
-              <div className="field-group">
-                <label htmlFor="area">Your area</label>
-                <AreaSelect
-                  value={formData.area}
-                  onChange={(area) => {
-                    setFormData((prev) => ({ ...prev, area }));
-                    setError("");
-                  }}
                 />
               </div>
             </>

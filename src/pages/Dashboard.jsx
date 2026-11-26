@@ -443,11 +443,7 @@ export default function Dashboard() {
                     <strong>{profile.phone || "Not provided"}</strong>
                   </div>
 
-                  <div>
-                    <span>Area</span>
-                    <strong>{profile.area || "Not provided"}</strong>
-                  </div>
-
+                  
                   <div>
                     <span>XP earned</span>
                     <strong>{profile.xp} XP</strong>

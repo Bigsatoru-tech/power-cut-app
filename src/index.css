@@ -3931,3 +3931,88 @@ body,
   font-size: 13px; opacity: 0.75; border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
 .history-list small { white-space: nowrap; opacity: 0.8; }
+
+/* ---------- Phone gate, GPS warning, skill status, toast ---------- */
+.gate-input {
+  width: 100%;
+  padding: 11px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #f8fafc;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+}
+
+.gps-warning {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  z-index: 1000;
+  max-width: 320px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  text-align: center;
+  color: #1f1300;
+  background: var(--yellow);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.status-pill {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.status-pill .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status-pill.free { color: var(--green); background: rgba(67, 160, 71, 0.15); }
+.status-pill.ongoing { color: #f59e0b; background: rgba(245, 158, 11, 0.15); }
+
+.danger-btn { background: #b91c1c; margin-top: 8px; }
+
+.toast {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4000;
+  width: calc(100% - 28px);
+  max-width: 380px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: #f8fafc;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-left: 4px solid var(--green);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+}
+.toast-text { flex: 1; line-height: 1.4; }
+.toast-more { opacity: 0.7; }
+.toast-actions { display: flex; align-items: center; gap: 8px; }
+.toast-open {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--green);
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.toast-close { background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; font-size: 14px; }

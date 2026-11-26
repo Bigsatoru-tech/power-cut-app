@@ -29,7 +29,7 @@ export default function ProfilePage() {
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <EditUsername prefix="@" />
         </div>
-        {profile.area && <div className="skill-meta">{profile.area}</div>}
+        
         <div className="profile-xp">{profile.xp} XP</div>
         <div className="profile-level">
           Level {level}

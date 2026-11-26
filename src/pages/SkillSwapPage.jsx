@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import XpBadge from '../components/XpBadge'
 import CommunityChat from '../components/CommunityChat'
-import { getSkills, initials } from '../skillsApi'
+import { getSkills, initials, STATUS_LABEL } from '../skillsApi'
 import useAuth from '../hooks/useAuth'
 
 const CATEGORIES = ['All', 'Electrical', 'Design', 'Printing', 'Tech', 'Tailoring', 'Tutoring']
@@ -64,6 +64,10 @@ export default function SkillSwapPage() {
                 <b>{s.name}</b>
                 <div className="skill-meta">{s.category} · Level {s.level}</div>
               </div>
+              <span className={`status-pill ${s.status}`}>
+                <i className="status-dot" />
+                {STATUS_LABEL[s.status] || s.status}
+              </span>
             </div>
             <div className="skill-title">{s.offers}</div>
             <div className="wants-box">

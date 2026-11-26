@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { signInUser, signUpUser } from '../userAuth'
-import AreaSelect from '../components/AreaSelect'
 
 export default function DevLogin() {
   const [mode, setMode] = useState('signin')
-  const [form, setForm] = useState({ email: '', password: '', username: '', phone: '', area: '' })
+    const [form, setForm] = useState({ email: '', password: '', username: '', phone: '' })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -29,16 +28,16 @@ export default function DevLogin() {
   return (
     <form className="form-page" onSubmit={submit}>
       <h2>{mode === 'signup' ? 'Test sign up' : 'Test sign in'} (temporary)</h2>
-      <label className="field">Email
-        <input type="email" required value={form.email} onChange={(e) => set('email', e.target.value)} />
-      </label>
+                <label className="field">Phone
+            <input required value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="0803 123 4567" />
+          </label>
       {mode === 'signup' && (
         <>
           <label className="field">Username
             <input required value={form.username} onChange={(e) => set('username', e.target.value)} placeholder="e.g. alice_test" />
           </label>
           <label className="field">Phone
-            <input value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+            <input required value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="0803 123 4567" />
           </label>
           <label className="field">Area
             <AreaSelect value={form.area} onChange={(v) => set('area', v)} />

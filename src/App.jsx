@@ -11,6 +11,8 @@ import AdminSignup from './pages/AdminSignup'
 import AdminDashboard from './pages/AdminDashboard'
 import DevLogin from './pages/DevLogin'
 import LocationGate from './components/LocationGate'
+import PhoneGate from './components/PhoneGate'
+import NotificationToast from './components/NotificationToast'
 import Navbar from './components/Navbar'
 import PublicOnly from './components/PublicOnly'
 import RequireAuth from './components/RequireAuth'
@@ -25,10 +27,22 @@ const NO_NAVBAR = ['/', '/login', '/signup', '/dev-login', '/admin/login', '/adm
 export default function App() {
   const { pathname } = useLocation()
   const { profile } = useAuth()
+  
+  // Everyone needs a phone number. Existing users without one add it before continuing.
+  const needsPhone = profile && !profile.phone && profile.role !== 'admin' && !pathname.startsWith('/admin')
+
+  if (needsPhone) {
+    return (
+      <LocationGate>
+        <PhoneGate />
+      </LocationGate>
+    )
+  }
 
   return (
     <LocationGate>
       {profile && !NO_NAVBAR.includes(pathname) && <Navbar />}
+            {profile && <NotificationToast />}
       <Routes>
         {/* Signed-out only: signed-in users are sent to the map */}
         <Route element={<PublicOnly />}>

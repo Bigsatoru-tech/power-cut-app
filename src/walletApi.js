@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient'
 
-// Keep in sync with the xp_rules table: a verified outage report earns 10 XP
-export const PENDING_REPORT_XP = 10
+// Keep in sync with the xp_rules table: a verified outage report earns 15 XP (each confirmation earns 10 XP)
+export const PENDING_REPORT_XP = 15
 
 const TEXT = {
   report: ['Outage report verified', 'Your report was confirmed by the community'],

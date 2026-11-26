@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { adminSignOut } from '../adminAuth'
+import useAuth from '../hooks/useAuth'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
+  const { profile } = useAuth()
+  const isModerator = !!profile?.isModerator
+  const [admins, setAdmins] = useState([])
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [chats, setChats] = useState(null)
@@ -17,10 +21,20 @@ export default function AdminDashboard() {
     else setPending(data)
   }
 
+  async function loadAdmins() {
+    const { data, error: err } = await supabase.rpc('admin_list_admins')
+    if (err) setError(err.message)
+    else setAdmins(data)
+  }
+
   useEffect(() => {
     supabase.rpc('admin_pending_admins').then(({ data, error: err }) => {
       if (err) setError(err.message)
       else setPending(data)
+    })
+    supabase.rpc('admin_list_admins').then(({ data, error: err }) => {
+      if (err) setError(err.message)
+      else setAdmins(data)
     })
   }, [])
 
@@ -50,6 +64,16 @@ export default function AdminDashboard() {
     const { error: err } = await supabase.rpc('approve_admin', { p_username: username })
     if (err) return setError(err.message)
     loadPending()
+    loadAdmins()
+  }
+
+  // Only the moderator can do this (the database refuses anyone else)
+  async function removeAdmin(username) {
+    if (!window.confirm(`Remove the admin badge from @${username}?`)) return
+    setError('')
+    const { error: err } = await supabase.rpc('remove_admin', { p_username: username })
+    if (err) return setError(err.message)
+    loadAdmins()
   }
 
   async function signOut() {
@@ -105,9 +129,9 @@ export default function AdminDashboard() {
         <div className="admin-card">
           <b>Direct messages of @{chats.username}</b>
           {Object.keys(chats.rooms).length === 0 && <div className="empty-note">No direct messages.</div>}
-                    {Object.entries(chats.rooms).map(([room, msgs]) => (
+          {Object.entries(chats.rooms).map(([room, msgs]) => (
             <div key={room} className="admin-convo">
-                            <div className="friends-subtitle">Conversation with @{msgs[0].partner_username || 'unknown'}</div>
+              <div className="friends-subtitle">Conversation with @{msgs[0].partner_username || 'unknown'}</div>
               {msgs.map((m, j) => (
                 <div className="msg" key={j}>
                   <div className="msg-user">
@@ -132,6 +156,20 @@ export default function AdminDashboard() {
           <button className="small-btn" onClick={() => approve(p.username)}>Approve</button>
         </div>
       ))}
+
+      <div className="friends-subtitle">Admins{isModerator ? ' (you are the moderator)' : ''}</div>
+      {admins.map((a) => (
+        <div className="friend-row" key={a.username}>
+          <div className="friend-info">
+            <b>@{a.username}{a.is_moderator ? ' · Moderator' : ''}</b>
+            <div className="skill-meta">{a.email}</div>
+          </div>
+          {isModerator && !a.is_moderator && (
+            <button className="small-btn ghost" onClick={() => removeAdmin(a.username)}>Remove admin</button>
+          )}
+        </div>
+      ))}
+      {!isModerator && <div className="skill-meta">Only the moderator can remove an admin.</div>}
     </div>
   )
 }

@@ -13,6 +13,8 @@ let infoShownOnce = false
 
 const COLORS = { pending: '#fbc02d', verified: '#e53935', restored: '#43a047' }
 const DEFAULT_CENTER = [6.5244, 3.3792]
+const NEED_GPS =
+  'We need your exact (GPS) location to do this. Allow location access in your browser settings, then try again.'
 
 async function getIpInfo() {
   const res = await fetch('https://ipapi.co/json/')
@@ -92,9 +94,11 @@ export default function MapPage() {
   }
 
   async function handleReport() {
-    if (!me) return alert('Still finding your location...')
+      if (!me || me.source !== 'GPS') return alert(NEED_GPS)
     try {
-      await createReport(me.lat, me.lng)
+      // the report is placed where the user really is, named after the nearest town
+      const place = await getPlaceName(me.lat, me.lng).catch(() => null)
+      await createReport(me.lat, me.lng, place)
       await refresh()
     } catch (err) {
       alert(err.message)
@@ -102,7 +106,7 @@ export default function MapPage() {
   }
 
   async function handleConfirm(id) {
-    if (!me) return alert('Still finding your location...')
+        if (!me || me.source !== 'GPS') return alert(NEED_GPS)
     try {
       await confirmReport(id, me.lat, me.lng)
       await refresh()
@@ -177,7 +181,12 @@ export default function MapPage() {
           IP: {ip || '...'} · Location: {me ? me.source : 'finding...'}
         </div>
       )}
-
+      
+      {me && me.source !== 'GPS' && (
+        <div className="gps-warning">
+          Your exact location is off. Allow GPS in your browser to report or confirm outages.
+        </div>
+      )}
       {myActive ? (
         <button
           className={holding ? 'btn report-btn restore-btn holding' : 'btn report-btn restore-btn'}
